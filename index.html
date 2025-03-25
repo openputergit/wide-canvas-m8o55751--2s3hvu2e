@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeonEsports - Cyberpunk Esports League Management</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Orbitron:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background-color: #0a0e17;
+            color: #d1e8ff;
+            background-image: 
+                radial-gradient(circle at 50% 50%, rgba(37, 99, 235, 0.1) 0%, transparent 80%),
+                linear-gradient(rgba(0, 0, 0, 0.9) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 0, 0, 0.9) 1px, transparent 1px);
+            background-size: 100% 100%, 30px 30px, 30px 30px;
+            overflow-x: hidden;
+        }
+        .orbitron {
+            font-family: 'Orbitron', sans-serif;
+        }
+        .cyberpunk-border {
+            position: relative;
+            border: 1px solid rgba(37, 99, 235, 0.5);
+            box-shadow: 0 0 15px rgba(37, 99, 235, 0.5), inset 0 0 10px rgba(37, 99, 235, 0.3);
+        }
+        .cyberpunk-border::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            width: 10px;
+            height: 10px;
+            border-top: 2px solid #3b82f6;
+            border-left: 2px solid #3b82f6;
+        }
+        .cyberpunk-border::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            right: -2px;
+            width: 10px;
+            height: 10px;
+            border-bottom: 2px solid #3b82f6;
+            border-right: 2px solid #3b82f6;
+        }
+        .game-card {
+            transition: all 0.3s ease;
+            background: rgba(17, 24, 39, 0.8);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+        .game-card:hover {
+            transform: translateY(-5px) scale(1.03);
+            box-shadow: 0 0 30px rgba(59, 130, 246, 0.5);
+            border-color: rgba(59, 130, 246, 0.8);
+        }
+        .neon-text {
+            text-shadow: 0 0 5px rgba(59, 130, 246, 0.8), 0 0 10px rgba(59, 130, 246, 0.5);
+        }
+        .neon-border {
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #111827 0%, #0f172a 100%);
+        }
+        .cyber-button {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(59, 130, 246, 0.5);
+        }
+        .cyber-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.2), transparent);
+            transition: all 0.5s ease;
+        }
+        .cyber-button:hover::before {
+            left: 100%;
+        }
+        .cyber-button:hover {
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+        }
+        .modal-overlay {
+            backdrop-filter: blur(5px);
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+        .modal-container {
+            background: linear-gradient(135deg, #111827 0%, #0f172a 100%);
+            border: 1px solid rgba(59, 130, 246, 0.5);
+            box-shadow: 0 0 30px rgba(59, 130, 246, 0.3);
+        }
+        .glitch-effect {
+            position: relative;
+        }
+        .glitch-effect::before {
+            content: attr(data-text);
+            position: absolute;
+            left: -2px;
+            text-shadow: 1px 0 #ff00ff;
+            top: 0;
+            color: #d1e8ff;
+            overflow: hidden;
+            clip: rect(0, 900px, 0, 0);
+            animation: glitch-effect 3s infinite linear alternate-reverse;
+        }
+        .glitch-effect::after {
+            content: attr(data-text);
+            position: absolute;
+            left: 2px;
+            text-shadow: -1px 0 #00ffff;
+            top: 0;
+            color: #d1e8ff;
+            overflow: hidden;
+            clip: rect(0, 900px, 0, 0);
+            animation: glitch-effect 4s infinite linear alternate-reverse;
+        }
+        @keyframes glitch-effect {
+            0% {
+                clip: rect(16px, 9999px, 28px, 0);
+            }
+            5% {
+                clip: rect(72px, 9999px, 87px, 0);
+            }
+            10% {
+                clip: rect(33px, 9999px, 16px, 0);
+            }
+            15% {
+                clip: rect(36px, 9999px, 99px, 0);
+            }
+            20% {
+                clip: rect(1px, 9999px, 1px, 0);
+            }
+            25% {
+                clip: rect(14px, 9999px, 71px, 0);
+            }
+            100% {
+                clip: rect(67px, 9999px, 91px, 0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app" class="min-h-screen">
+        <!-- Navigation -->
+        <nav class="gradient-bg border-b border-blue-500/30 p-4 sticky top-0 z-50">
+            <div class="container mx-auto flex justify-between items-center">
+                <h1 class="orbitron text-2xl md:text-3xl font-bold text-blue-500 glitch-effect" data-text="NeonEsports">NeonEsports</h1>
+                <div class="hidden md:flex space-x-6">
+                    <a href="#" class="hover:text-blue-500 transition-all duration-300">Home</a>
+                    <a href="#" class="hover:text-blue-500 transition-all duration-300">Tournaments</a>
+                    <a href="#" class="hover:text-blue-500 transition-all duration-300">Teams</a>
+                    <a href="#" class="hover:text-blue-500 transition-all duration-300">News</a>
+                </div>
+                <div class="flex space-x-4">
+                    <button @click="openLoginModal" class="cyber-button bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg transition">Login</button>
+                    <button @click="openRegisterModal" class="cyber-button bg-transparent hover:bg-blue-500/20 px-4 py-2 rounded-lg transition">Register</button>
+                </div>
+                <button @click="toggleMobileMenu" class="md:hidden text-2xl"><i class="bi bi-list"></i></button>
+            </div>
+            <!-- Mobile Menu -->
+            <div v-if="mobileMenuOpen" class="md:hidden mt-4 bg-gray-900/80 backdrop-blur-sm rounded-lg p-4 absolute top-16 left-0 w-full border border-blue-500/30 z-50">
+                <div class="flex flex-col space-y-4">
+                    <a href="#" class="hover:text-blue-500 transition-all duration-300 py-2 border-b border-blue-500/20">Home</a>
+                    <a href="#" class="hover:text-blue-500 transition-all duration-300 py-2 border-b border-blue-500/20">Tournaments</a>
+                    <a href="#" class="hover:text-blue-500 transition-all duration-300 py-2 border-b border-blue-500/20">Teams</a>
+                    <a href="#" class="hover:text-blue-500 transition-all duration-300 py-2">News</a>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Hero Section -->
+        <section class="py-16 px-4 relative overflow-hidden">
+            <div class="absolute inset-0 bg-blue-900/10 z-0"></div>
+            <div class="container mx-auto text-center relative z-10">
+                <h1 class="orbitron text-4xl md:text-6xl font-bold mb-6 neon-text">Welcome to Cyberpunk<br>Esports League</h1>
+                <p class="text-lg md:text-xl text-blue-200/80 mb-8 max-w-3xl mx-auto">Register your organization, manage teams, and compete in top-tier neon-lit tournaments in the digital battlegrounds</p>
+                <div class="flex flex-wrap justify-center gap-4">
+                    <button @click="createOrganization" class="cyber-button bg-blue-600 hover:bg-blue-700 px-8 py-3 rounded-lg text-lg transition">Create Organization</button>
+                    <button @click="viewTournaments" class="cyber-button bg-transparent border border-blue-500 hover:bg-blue-500/20 px-8 py-3 rounded-lg text-lg transition">View Tournaments</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Featured Games -->
+        <section class="py-16 px-4 gradient-bg relative">
+            <div class="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-blue-500/50 to-transparent"></div>
+            <div class="container mx-auto">
+                <h2 class="orbitron text-3xl font-bold mb-12 text-center neon-text">Featured Games</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                    <div v-for="game in games" :key="game.id" class="game-card rounded-xl p-6 transition duration-300 cyberpunk-border">
+                        <div class="relative overflow-hidden rounded-lg mb-4">
+                            <img :src="game.image" :alt="game.name" class="w-full h-48 object-cover rounded-lg transform transition-all duration-700 hover:scale-110">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
+                        </div>
+                        <h3 class="orbitron text-xl font-bold mb-2 text-blue-400">{{ game.name }}</h3>
+                        <p class="text-gray-400 mb-4">{{ game.description }}</p>
+                        <button @click="joinLeague(game)" class="w-full cyber-button bg-blue-600 hover:bg-blue-700 py-2 rounded-lg transition">Join League</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tournaments Section -->
+        <section class="py-16 px-4 relative">
+            <div class="absolute bottom-0 right-0 w-1/2 h-px bg-gradient-to-l from-transparent via-blue-500/50 to-transparent"></div>
+            <div class="container mx-auto">
+                <h2 class="orbitron text-3xl font-bold mb-12 text-center neon-text">Active Tournaments</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div v-for="tournament in tournaments" :key="tournament.id" class="bg-gray-900/80 backdrop-blur-sm rounded-xl p-6 neon-border transition-all duration-300 hover:-translate-y-2">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="orbitron text-xl font-bold text-blue-400">{{ tournament.name }}</h3>
+                            <span :class="`${getStatusClass(tournament.status)} px-3 py-1 rounded-full text-sm`">{{ tournament.status }}</span>
+                        </div>
+                        <p class="text-gray-400 mb-4">{{ tournament.description }}</p>
+                        <div class="flex justify-between items-center text-sm text-gray-400 mb-4">
+                            <span><i class="bi bi-calendar text-blue-400"></i> {{ tournament.date }}</span>
+                            <span><i class="bi bi-people text-blue-400"></i> {{ tournament.teams }} Teams</span>
+                            <span><i class="bi bi-trophy text-blue-400"></i> ${{ tournament.prize }}</span>
+                        </div>
+                        <button @click="registerTeam(tournament)" class="w-full cyber-button bg-blue-600 hover:bg-blue-700 py-2 rounded-lg transition">Register Team</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section class="py-16 px-4 gradient-bg">
+            <div class="container mx-auto">
+                <h2 class="orbitron text-3xl font-bold mb-12 text-center neon-text">Platform Features</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div class="p-6 bg-gray-900/80 backdrop-blur-sm rounded-xl neon-border">
+                        <div class="text-blue-500 text-4xl mb-4"><i class="bi bi-people-fill"></i></div>
+                        <h3 class="orbitron text-xl font-bold mb-3 text-blue-400">Team Management</h3>
+                        <p class="text-gray-400">Create and manage your esports organization with custom rosters for each game. Add players, design team profiles, and track performance metrics.</p>
+                    </div>
+                    <div class="p-6 bg-gray-900/80 backdrop-blur-sm rounded-xl neon-border">
+                        <div class="text-blue-500 text-4xl mb-4"><i class="bi bi-trophy-fill"></i></div>
+                        <h3 class="orbitron text-xl font-bold mb-3 text-blue-400">Tournament System</h3>
+                        <p class="text-gray-400">Participate in automated tournaments with professional brackets, real-time updates, and comprehensive match statistics.</p>
+                    </div>
+                    <div class="p-6 bg-gray-900/80 backdrop-blur-sm rounded-xl neon-border">
+                        <div class="text-blue-500 text-4xl mb-4"><i class="bi bi-bar-chart-fill"></i></div>
+                        <h3 class="orbitron text-xl font-bold mb-3 text-blue-400">Performance Analytics</h3>
+                        <p class="text-gray-400">Track detailed stats for players and teams with advanced analytics dashboards showing performance trends over time.</p>
+                    </div>
+                    <div class="p-6 bg-gray-900/80 backdrop-blur-sm rounded-xl neon-border">
+                        <div class="text-blue-500 text-4xl mb-4"><i class="bi bi-camera-video-fill"></i></div>
+                        <h3 class="orbitron text-xl font-bold mb-3 text-blue-400">Live Streaming</h3>
+                        <p class="text-gray-400">Integrated streaming capabilities to broadcast matches directly to your audience with custom overlays and branding.</p>
+                    </div>
+                    <div class="p-6 bg-gray-900/80 backdrop-blur-sm rounded-xl neon-border">
+                        <div class="text-blue-500 text-4xl mb-4"><i class="bi bi-cash-stack"></i></div>
+                        <h3 class="orbitron text-xl font-bold mb-3 text-blue-400">Prize Distribution</h3>
+                        <p class="text-gray-400">Secure payment processing for tournament entry fees and automated prize distribution to winning teams.</p>
+                    </div>
+                    <div class="p-6 bg-gray-900/80 backdrop-blur-sm rounded-xl neon-border">
+                        <div class="text-blue-500 text-4xl mb-4"><i class="bi bi-chat-square-text-fill"></i></div>
+                        <h3 class="orbitron text-xl font-bold mb-3 text-blue-400">Community Features</h3>
+                        <p class="text-gray-400">Integrated forums, team chat, and social features to build your esports community and engage with fans.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="gradient-bg border-t border-blue-500/30 py-8">
+            <div class="container mx-auto px-4">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                    <div>
+                        <h3 class="orbitron text-xl font-bold mb-4 text-blue-500">NeonEsports</h3>
+                        <p class="text-gray-400">Cyberpunk Esports League Management Platform for the digital generation</p>
+                    </div>
+                    <div>
+                        <h4 class="font-bold mb-4 text-blue-400">Quick Links</h4>
+                        <ul class="space-y-2 text-gray-400">
+                            <li><a href="#" class="hover:text-blue-500 transition-all duration-300">About Us</a></li>
+                            <li><a href="#" class="hover:text-blue-500 transition-all duration-300">Contact</a></li>
+                            <li><a href="#" class="hover:text-blue-500 transition-all duration-300">Terms of Service</a></li>
+                            <li><a href="#" class="hover:text-blue-500 transition-all duration-300">Privacy Policy</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="font-bold mb-4 text-blue-400">Games</h4>
+                        <ul class="space-y-2 text-gray-400">
+                            <li><a href="#" class="hover:text-blue-500 transition-all duration-300">BGMI</a></li>
+                            <li><a href="#" class="hover:text-blue-500 transition-all duration-300">Free Fire</a></li>
+                            <li><a href="#" class="hover:text-blue-500 transition-all duration-300">Call of Duty</a></li>
+                            <li><a href="#" class="hover:text-blue-500 transition-all duration-300">Valorant</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="font-bold mb-4 text-blue-400">Connect With Us</h4>
+                        <div class="flex space-x-4 text-2xl">
+                            <a href="#" class="hover:text-blue-500 transition-all duration-300"><i class="bi bi-twitter"></i></a>
+                            <a href="#" class="hover:text-blue-500 transition-all duration-300"><i class="bi bi-facebook"></i></a>
+                            <a href="#" class="hover:text-blue-500 transition-all duration-300"><i class="bi bi-instagram"></i></a>
+                            <a href="#" class="hover:text-blue-500 transition-all duration-300"><i class="bi bi-discord"></i></a>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-8 pt-6 border-t border-blue-500/20 text-center text-gray-500 text-sm">
+                    &copy; {{ new Date().getFullYear() }} NeonEsports. All rights reserved.
+                </div>
+            </div>
+        </footer>
+
+        <!-- Login Modal -->
+        <div v-if="showLoginModal" class="fixed inset-0 flex items-center justify-center z-50 modal-overlay" @click.self="showLoginModal = false">
+            <div class="w-full max-w-md p-6 rounded-lg modal-container relative cyberpunk-border">
+                <button @click="showLoginModal = false" class="absolute top-3 right-3 text-gray-400 hover:text-white">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+                <h3 class="orbitron text-2xl font-bold mb-6 text-blue-500 text-center">Login</h3>
+                <form @submit.prevent="handleLogin" class="space-y-4">
+                    <div>
+                        <label class="block text-sm text-blue-300 mb-1">Email</label>
+                        <input v-model="loginForm.email" type="email" required class="w-full p-3 bg-gray-800/80 border border-blue-500/30 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm text-blue-300 mb-1">Password</label>
+                        <input v-model="loginForm.password" type="password" required class="w-full p-3 bg-gray-800/80 border border-blue-500/30 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center">
+                            <input type="checkbox" id="remember" class="mr-2">
+                            <label for="remember" class="text-sm text-gray-400">Remember me</label>
+                        </div>
+                        <a href="#" class="text-sm text-blue-400 hover:text-blue-300">Forgot password?</a>
+                    </div>
+                    <button type="submit" class="w-full cyber-button bg-blue-600 hover:bg-blue-700 py-3 rounded-lg font-medium transition">Login</button>
+                    <div class="text-center text-gray-400 text-sm">
+                        Don't have an account? <a @click.prevent="switchToRegister" href="#" class="text-blue-400 hover:text-blue-300">Register now</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Register Modal -->
+        <div v-if="showRegisterModal" class="fixed inset-0 flex items-center justify-center z-50 modal-overlay" @click.self="showRegisterModal = false">
+            <div class="w-full max-w-md p-6 rounded-lg modal-container relative cyberpunk-border overflow-y-auto max-h-[90vh]">
+                <button @click="showRegisterModal = false" class="absolute top-3 right-3 text-gray-400 hover:text-white">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+                <h3 class="orbitron text-2xl font-bold mb-6 text-blue-500 text-center">Register</h3>
+                <div class="mb-4 flex justify-center">
+                    <button @click="registerType = 'player'" :class="registerType === 'player' ? 'bg-blue-600' : 'bg-transparent'" class="cyber-button px-4 py-2 rounded-l-lg border border-blue-500/50">Player</button>
+                    <button @click="registerType = 'organization'" :class="registerType === 'organization' ? 'bg-blue-600' : 'bg-transparent'" class="cyber-button px-4 py-2 rounded-r-lg border border-blue-500/50">Organization</button>
+                </div>
+                <form @submit.prevent="handleRegister" class="space-y-4">
+                    <div>
+                        <label class="block text-sm text-blue-300 mb-1">{{ registerType === 'player' ? 'Full Name' : 'Organization Name' }}</label>
+                        <input v-model="registerForm.name" type="text" required class="w-full p-3 bg-gray-800/80 border border-blue-500/30 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm text-blue-300 mb-1">Email</label>
+                        <input v-model="registerForm.email" type="email" required class="w-full p-3 bg-gray-800/80 border border-blue-500/30 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm text-blue-300 mb-1">Password</label>
+                        <input v-model="registerForm.password" type="password" required class="w-full p-3 bg-gray-800/80 border border-blue-500/30 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm text-blue-300 mb-1">Confirm Password</label>
+                        <input v-model="registerForm.confirmPassword" type="password" required class="w-full p-3 bg-gray-800/80 border border-blue-500/30 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                    </div>
+                    
+                    <!-- Organization specific fields -->
+                    <div v-if="registerType === 'organization'" class="space-y-4">
+                        <div>
+                            <label class="block text-sm text-blue-300 mb-1">Organization Logo</label>
+                            <input type="file" class="w-full p-3 bg-gray-800/80 border border-blue-500/30 rounded-lg">
+                        </div>
+                        <div>
+                            <label class="block text-sm text-blue-300 mb-1">Organization Description</label>
+                            <textarea v-model="registerForm.description" class="w-full p-3 bg-gray-800/80 border border-blue-500/30 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 h-24"></textarea>
+                        </div>
+                    </div>
+                    
+                    <!-- Player specific fields -->
+                    <div v-if="registerType === 'player'" class="space-y-4">
+                        <div>
+                            <label class="block text-sm text-blue-300 mb-1">Game ID (In-game name)</label>
+                            <input v-model="registerForm.gameId" type="text" class="w-full p-3 bg-gray-800/80 border border-blue-500/30 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm text-blue-300 mb-1">Primary Game</label>
+                            <select v-model="registerForm.primaryGame" class="w-full p-3 bg-gray-800/80 border border-blue-500/30 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                <option value="">Select a game</option>
+                                <option value="bgmi">BGMI</option>
+                                <option value="freefire">Free Fire</option>
+                                <option value="cod">Call of Duty</option>
+                                <option value="valorant">Valorant</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center">
+                        <input type="checkbox" id="terms" class="mr-2" required>
+                        <label for="terms" class="text-sm text-gray-400">I agree to the <a href="#" class="text-blue-400 hover:text-blue-300">Terms of Service</a> and <a href="#" class="text-blue-400 hover:text-blue-300">Privacy Policy</a></label>
+                    </div>
+                    
+                    <button type="submit" class="w-full cyber-button bg-blue-600 hover:bg-blue-700 py-3 rounded-lg font-medium transition">Register</button>
+                    <div class="text-center text-gray-400 text-sm">
+                        Already have an account? <a @click.prevent="switchToLogin" href="#" class="text-blue-400 hover:text-blue-300">Login now</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Notification Toast -->
+        <div v-if="notification.show" class="fixed bottom-5 right-5 p-4 rounded-lg cyberpunk-border z-50" :class="notification.type === 'error' ? 'bg-red-900/80' : 'bg-blue-900/80'">
+            <div class="flex items-center">
+                <i :class="notification.type === 'error' ? 'bi bi-exclamation-circle' : 'bi bi-check-circle'" class="mr-2 text-xl"></i>
+                <span>{{ notification.message }}</span>
+                <button @click="notification.show = false" class="ml-4 text-gray-400 hover:text-white">
+                    <i class="bi bi-x"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue
+
+        createApp({
+            data() {
+                return {
+                    mobileMenuOpen: false,
+                    showLoginModal: false,
+                    showRegisterModal: false,
+                    registerType: 'player',
+                    isLoggedIn: false,
+                    loginForm: {
+                        email: '',
+                        password: ''
+                    },
+                    registerForm: {
+                        name: '',
+                        email: '',
+                        password: '',
+                        confirmPassword: '',
+                        description: '',
+                        gameId: '',
+                        primaryGame: ''
+                    },
+                    notification: {
+                        show: false,
+                        message: '',
+                        type: 'success'
+                    },
+                    games: [
+                        {
+                            id: 1,
+                            name: 'BGMI',
+                            description: 'Cyberpunk battle royale mobile gaming championship',
+                            image: 'https://images.unsplash.com/photo-1560419015-7c427e8ae5ba?auto=format&fit=crop&w=800&q=80'
+                        },
+                        {
+                            id: 2,
+                            name: 'Free Fire',
+                            description: 'Fast-paced neon-lit battle royale action',
+                            image: 'https://images.unsplash.com/photo-1593305841991-05c297ba4575?auto=format&fit=crop&w=800&q=80'
+                        },
+                        {
+                            id: 3,
+                            name: 'Call of Duty',
+                            description: 'Professional COD mobile tournaments in dystopian arenas',
+                            image: 'https://images.unsplash.com/photo-1552820728-8b83bb6b773f?auto=format&fit=crop&w=800&q=80'
+                        },
+                        {
+                            id: 4,
+                            name: 'Valorant',
+                            description: 'Futuristic tactical shooter championship series',
+                            image: 'https://images.unsplash.com/photo-1627856013091-fed6e4e30025?auto=format&fit=crop&w=800&q=80'
+                        }
+                    ],
+                    tournaments: [
+                        {
+                            id: 1,
+                            name: 'NightCity BGMI Pro League',
+                            status: 'Registering',
+                            description: 'Monthly professional BGMI tournament with neon glory',
+                            date: 'Dec 15, 2023',
+                            teams: '32',
+                            prize: '50,000'
+                        },
+                        {
+                            id: 2,
+                            name: 'Valorant Cybernetic Championship',
+                            status: 'Ongoing',
+                            description: 'Premier Valorant competition with augmented reality stats',
+                            date: 'Dec 20, 2023',
+                            teams: '16',
+                            prize: '25,000'
+                        },
+                        {
+                            id: 3,
+                            name: 'Free Fire Neon Cup',
+                            status: 'Coming Soon',
+                            description: 'Quarterly Free Fire tournament in the digital wasteland',
+                            date: 'Jan 5, 2024',
+                            teams: '24',
+                            prize: '30,000'
+                        }
+                    ]
+                }
+            },
+            methods: {
+                toggleMobileMenu() {
+                    this.mobileMenuOpen = !this.mobileMenuOpen;
+                },
+                getStatusClass(status) {
+                    switch(status) {
+                        case 'Registering':
+                            return 'bg-green-500/20 text-green-400';
+                        case 'Ongoing':
+                            return 'bg-blue-500/20 text-blue-400';
+                        case 'Coming Soon':
+                            return 'bg-purple-500/20 text-purple-400';
+                        default:
+                            return 'bg-blue-500/20 text-blue-400';
+                    }
+                },
+                openLoginModal() {
+                    this.showRegisterModal = false;
+                    this.showLoginModal = true;
+                },
+                openRegisterModal() {
+                    this.showLoginModal = false;
+                    this.showRegisterModal = true;
+                },
+                switchToLogin() {
+                    this.showRegisterModal = false;
+                    this.showLoginModal = true;
+                },
+                switchToRegister() {
+                    this.showLoginModal = false;
+                    this.showRegisterModal = true;
+                },
+                handleLogin() {
+                    // Simulate login process
+                    this.showLoginModal = false;
+                    this.isLoggedIn = true;
+                    this.showNotification('Login successful! Welcome to NeonEsports.', 'success');
+                    
+                    // Reset form
+                    this.loginForm = {
+                        email: '',
+                        password: ''
+                    };
+                },
+                handleRegister() {
+                    // Validate passwords match
+                    if(this.registerForm.password !== this.registerForm.confirmPassword) {
+                        this.showNotification('Passwords do not match!', 'error');
+                        return;
+                    }
+                    
+                    // Simulate registration process
+                    this.showRegisterModal = false;
+                    this.isLoggedIn = true;
+                    this.showNotification(`${this.registerType === 'player' ? 'Player' : 'Organization'} registration successful! Welcome to NeonEsports.`, 'success');
+                    
+                    // Reset form
+                    this.registerForm = {
+                        name: '',
+                        email: '',
+                        password: '',
+                        confirmPassword: '',
+                        description: '',
+                        gameId: '',
+                        primaryGame: ''
+                    };
+                },
+                showNotification(message, type = 'success') {
+                    this.notification = {
+                        show: true,
+                        message,
+                        type
+                    };
+                    
+                    // Auto hide after 5 seconds
+                    setTimeout(() => {
+                        this.notification.show = false;
+                    }, 5000);
+                },
+                createOrganization() {
+                    if(!this.isLoggedIn) {
+                        this.showNotification('You need to Register or Login first', 'error');
+                    } else {
+                        this.showNotification('Organization creation form opened', 'success');
+                    }
+                },
+                viewTournaments() {
+                    this.showNotification('No Tournaments going on Currently', 'error');
+                },
+                joinLeague(game) {
+                    this.showNotification('No Leagues are Registered Yet', 'error');
+                },
+                registerTeam(tournament) {
+                    if(!this.isLoggedIn) {
+                        this.showNotification('You need to Login First', 'error');
+                    } else {
+                        this.showNotification(`Team registration for ${tournament.name} initiated`, 'success');
+                    }
+                }
+            }
+        }).mount('#app')
+    </script>
+<script>document.body.addEventListener('wheel', e => { if (!e.ctrlKey) return; e.preventDefault(); return }, { passive: false })</script>
+	</body>
+</html>
